@@ -1,8 +1,8 @@
-# Big Berlin Hackathon 2025 - https://techeurope.notion.site/big-berlin-hack-manual
+
 
 # Restaurantia Voice AI Agent
 
-A bilingual (English/German) AI voice reservation agent for restaurants, built with LiveKit Agents, OpenAI, and n8n workflow automation. Customers can make table reservations through natural voice conversations without phone calls or SMS notifications.
+A bilingual AI voice reservation agent for restaurants, built with LiveKit Agents, OpenAI, and n8n workflow automation. Customers can make table reservations through natural voice conversations without phone calls or SMS notifications.
 
 ## Table of Contents
 
@@ -110,7 +110,7 @@ Before starting, ensure you have:
 - **Git**: [Download](https://git-scm.com/)
 
 ### Cloud Services & Accounts
-- **LiveKit Cloud Account**: [Create](https://cloud.livekit.io/) or [Self-hosted](https://docs.livekit.io/home/self-hosted)
+- **LiveKit Cloud Account**: [Create](https://cloud.livekit.io/) 
 - **OpenAI Account**: [Create](https://platform.openai.com/) with API access and credits
 - **Airtable Account**: [Create](https://airtable.com/) for database
 - **n8n Instance**: [Cloud](https://n8n.cloud/) or [Self-hosted](https://docs.n8n.io/)
@@ -247,44 +247,6 @@ Should display LiveKit Agents CLI help.
 2. Create new project (free tier available)
 3. Generate API credentials
 4. Copy credentials to `.env.local`
-
-**Option 2: Self-Hosted LiveKit**
-
-Follow [LiveKit Self-Hosted Documentation](https://docs.livekit.io/home/self-hosted):
-
-```bash
-docker pull livekit/livekit-server
-docker run --rm -it -p 7880:7880 \
-  -e LIVEKIT_API_KEY=devkey \
-  -e LIVEKIT_API_SECRET=secret \
-  livekit/livekit-server
-```
-
-Then set in `.env.local`:
-```env
-LIVEKIT_URL=ws://localhost:7880
-LIVEKIT_API_KEY=devkey
-LIVEKIT_API_SECRET=secret
-```
-
-### n8n Workflow Setup
-
-See [n8n Documentation](https://docs.n8n.io/) for detailed setup.
-
-**Create Workflow:**
-
-1. Go to n8n dashboard
-2. Click "New workflow"
-3. Add Webhook trigger:
-   - Method: POST
-   - Path: `restaurant-booking`
-4. Add processing nodes (optional):
-   - Database nodes for logging
-   - Notification nodes
-   - Custom business logic
-5. Add "Respond to Webhook" node at end
-6. Activate workflow
-7. Copy webhook URL
 
 **Webhook Trigger Configuration:**
 
@@ -629,14 +591,6 @@ restaurantia-voice-agent/
 - **Use RBAC** for Airtable access
 - **Monitor usage** of OpenAI API
 
-## Contributing
-
-1. Fork the repository
-2. Create feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open Pull Request
-
 ## License
 
 This project is licensed under the MIT License - see LICENSE file for details.
@@ -649,13 +603,6 @@ This project is licensed under the MIT License - see LICENSE file for details.
 - [Airtable API](https://airtable.com/api)
 - [n8n Documentation](https://docs.n8n.io/)
 
-**Issues & Questions:**
-- GitHub Issues: Create issue with detailed description
-- LiveKit Community: https://livekit.io/community
-- n8n Community: https://community.n8n.io/
-
 ---
 
 **Made with ❤️ by Restaurantia Team**
-
-Last Updated: October 12, 2025
