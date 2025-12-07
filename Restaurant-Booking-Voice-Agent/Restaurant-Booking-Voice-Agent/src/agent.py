@@ -28,11 +28,11 @@ logger = logging.getLogger("agent")
 
 load_dotenv(".env.local")
 
-# Airtable configuration
+# Configuration from environment variables
 AIRTABLE_API_TOKEN = os.getenv("AIRTABLE_API_TOKEN")
 AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID", "app7SapLnw8VfBDjQ")
 AIRTABLE_TABLE_NAME = os.getenv("AIRTABLE_TABLE_NAME", "Order Summary")
-
+N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL", "https://savy2001.app.n8n.cloud/webhook/restaurant-booking")
 
 class RestaurantiaAgent(Agent):
     def __init__(self, customer_name: str = None, customer_phone: str = None, language: str = "en") -> None:
@@ -160,7 +160,7 @@ Denke daran:
         Args:
             customer_name: The customer's name
             date: Date in format YYYY-MM-DD or M/D/YYYY (e.g. 2025-10-15 or 10/15/2025)
-            time: Time in HH:MM format (e.g. 19:00 for 7pm)
+            time: Time in HH:MM format (e.g., 19:00 for 7pm)
             guests: Number of guests (1-20)
             special_requests: Any special requests like "coffee and pastries", "lunch reservation", "birthday dinner", etc.
         """
@@ -177,8 +177,8 @@ Denke daran:
             # Convert date to M/D/YYYY format for Airtable
             airtable_date = start_datetime.strftime("%m/%d/%Y")
             
-            # Generate unique 3-digit Reservation ID
-            reservation_id = str(random.randint(100, 999))
+            # Generate unique 5-character Reservation ID
+            reservation_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
             
             logger.info(f"📅 Parsed date: {airtable_date}, Reservation ID: {reservation_id}")
             
@@ -234,8 +234,6 @@ Denke daran:
             }
             
             # Send to n8n webhook
-            N8N_WEBHOOK_URL = "https://savy2001.app.n8n.cloud/webhook/restaurant-booking"
-            
             async with aiohttp.ClientSession() as client:
                 try:
                     logger.info(f"📤 Sending to n8n: {N8N_WEBHOOK_URL}")
