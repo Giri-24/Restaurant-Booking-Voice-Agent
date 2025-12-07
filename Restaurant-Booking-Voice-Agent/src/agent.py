@@ -25,14 +25,21 @@ from livekit.plugins import noise_cancellation, silero, openai
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
 logger = logging.getLogger("agent")
+logging.basicConfig(level=logging.INFO)  # Add this for better debugging
 
 load_dotenv(".env.local")
 
-# Airtable configuration
+# Configuration from environment variables
 AIRTABLE_API_TOKEN = os.getenv("AIRTABLE_API_TOKEN")
 AIRTABLE_BASE_ID = os.getenv("AIRTABLE_BASE_ID", "app7SapLnw8VfBDjQ")
 AIRTABLE_TABLE_NAME = os.getenv("AIRTABLE_TABLE_NAME", "Order Summary")
+N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL")
 
+# Debug logging
+logger.info(f"🔍 AIRTABLE_API_TOKEN: {'✅ Set' if AIRTABLE_API_TOKEN else '❌ Missing'}")
+logger.info(f"🔍 AIRTABLE_BASE_ID: {AIRTABLE_BASE_ID}")
+logger.info(f"🔍 AIRTABLE_TABLE_NAME: {AIRTABLE_TABLE_NAME}")
+logger.info(f"🔍 N8N_WEBHOOK_URL: {N8N_WEBHOOK_URL}")
 
 class RestaurantiaAgent(Agent):
     def __init__(self, customer_name: str = None, customer_phone: str = None, language: str = "en") -> None:
@@ -160,7 +167,7 @@ Denke daran:
         Args:
             customer_name: The customer's name
             date: Date in format YYYY-MM-DD or M/D/YYYY (e.g. 2025-10-15 or 10/15/2025)
-            time: Time in HH:MM format (e.g. 19:00 for 7pm)
+            time: Time in HH:MM format (e.g., 19:00 for 7pm)
             guests: Number of guests (1-20)
             special_requests: Any special requests like "coffee and pastries", "lunch reservation", "birthday dinner", etc.
         """
@@ -177,8 +184,8 @@ Denke daran:
             # Convert date to M/D/YYYY format for Airtable
             airtable_date = start_datetime.strftime("%m/%d/%Y")
             
-            # Generate unique 3-digit Reservation ID
-            reservation_id = str(random.randint(100, 999))
+            # Generate unique 5-character Reservation ID
+            reservation_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
             
             logger.info(f"📅 Parsed date: {airtable_date}, Reservation ID: {reservation_id}")
             
@@ -233,19 +240,26 @@ Denke daran:
                 "language": self.language
             }
             
-            # Send to n8n webhook
-            N8N_WEBHOOK_URL = "https://savy2001.app.n8n.cloud/webhook/restaurant-booking"
-            
-            async with aiohttp.ClientSession() as client:
-                try:
-                    logger.info(f"📤 Sending to n8n: {N8N_WEBHOOK_URL}")
-                    async with client.post(N8N_WEBHOOK_URL, json=booking_data, timeout=10) as resp:
-                        if resp.status in [200, 201]:
-                            logger.info(f"✅ n8n webhook success")
-                        else:
-                            logger.warning(f"⚠️ n8n returned status {resp.status}")
-                except Exception as e:
-                    logger.warning(f"⚠️ n8n webhook failed: {e}")
+            # Send to n8n webhook with better error handling
+            if N8N_WEBHOOK_URL:
+                async with aiohttp.ClientSession() as client:
+                    try:
+                        logger.info(f"📤 Sending to n8n: {N8N_WEBHOOK_URL}")
+                        logger.info(f"📊 Data: {json.dumps(booking_data, indent=2)}")
+                        
+                        async with client.post(N8N_WEBHOOK_URL, json=booking_data, timeout=10) as resp:
+                            response_text = await resp.text()
+                            logger.info(f"📨 n8n response status: {resp.status}")
+                            logger.info(f"📨 n8n response body: {response_text}")
+                            
+                            if resp.status in [200, 201]:
+                                logger.info(f"✅ n8n webhook success")
+                            else:
+                                logger.warning(f"⚠️ n8n returned status {resp.status}: {response_text}")
+                    except Exception as e:
+                        logger.warning(f"⚠️ n8n webhook failed: {e}")
+            else:
+                logger.warning("⚠️ N8N_WEBHOOK_URL not set, skipping webhook")
             
             # Return success message
             if airtable_success:
